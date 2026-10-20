@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(content=~{::section})}">
+<body>
+<section>
+    <div class="st-section-title">
+        <h2>System Architecture &amp; Methodology</h2>
+    </div>
+
+    <div class="st-card" style="margin-bottom: 24px;">
+        <div class="st-card-title">
+            <h3>Pipeline Topology</h3>
+            <p>End-to-end integration across Python ML inference and Java Spring Boot presentation tier</p>
+        </div>
+        <div style="background:#f8f9fa; border:1px solid #e6eaf1; border-radius:6px; padding:20px; font-family:'JetBrains Mono', monospace; font-size:0.85rem; line-height:1.7; color:#31333f;">
+┌───────────────────────────────────────────────┐<br>
+│  <strong>CMS Medicare Claims Dataset</strong> (5,410 Providers) │<br>
+└───────────────────────┬───────────────────────┘<br>
+                        │ Feature Engineering (30 features)<br>
+                        ▼<br>
+┌───────────────────────────────────────────────┐<br>
+│  <strong>XGBoost Model</strong> (Trained on 80/20 Stratified Split)│<br>
+│  • PR-AUC: 0.784 | ROC-AUC: 0.970 | Threshold: 0.28   │<br>
+└───────────────────────┬───────────────────────┘<br>
+                        │ Inference &amp; TreeSHAP Attribution<br>
+                        ▼<br>
+┌───────────────────────────────────────────────┐<br>
+│  <strong>FastAPI Microservice</strong> (Python 3.10+, Port 8000)  │<br>
+└───────────────────────┬───────────────────────┘<br>
+                        │ HTTP JSON REST Proxy<br>
+                        ▼<br>
+┌───────────────────────────────────────────────┐<br>
+│  <strong>Spring Boot 3.2 Frontend</strong> (Java 17, Port 8081)    │<br>
+│  • Streamlit Aesthetic • Plotly.js • Live Recalc │<br>
+└───────────────────────────────────────────────┘
+        </div>
+    </div>
+
+    <div class="st-grid-2">
+        <div class="st-card">
+            <div class="st-card-title">
+                <h3>Technical Stack</h3>
+            </div>
+            <ul style="line-height: 2; padding-left: 20px; color: #4b5563;">
+                <li><strong>Backend Framework:</strong> FastAPI (Python), Uvicorn ASGI server</li>
+                <li><strong>Frontend Framework:</strong> Spring Boot 3.2.3 (Java 17), Thymeleaf</li>
+                <li><strong>ML Classifier:</strong> XGBoost 2.0 (PR-AUC 0.784, ROC-AUC 0.970)</li>
+                <li><strong>Explainability Engine:</strong> TreeSHAP (SHAP values &amp; feature importance)</li>
+                <li><strong>Visualization:</strong> Client-side Plotly.js charts &amp; Matplotlib plots</li>
+            </ul>
+        </div>
+        <div class="st-card">
+            <div class="st-card-title">
+                <h3>Decision Threshold Strategy</h3>
+            </div>
+            <p style="color: #4b5563; font-size: 0.95rem; line-height: 1.6;">
+                The production threshold is pinned to <strong>0.28</strong> under the <em>Balanced Strategy</em> (Precision &ge; 50%).
+                This guarantees at least 1 in 2 flagged alerts represents actionable, confirmed fraud while capturing <strong>89.1%</strong> of all fraudulent provider activity in the population.
+            </p>
+        </div>
+    </div>
+</section>
+</body>
+</html>

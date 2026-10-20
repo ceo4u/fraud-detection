@@ -1,0 +1,32 @@
+{
+  "provider": "PRV52340",
+  "prob": 0.9987,
+  "actual_label": 1,
+  "top_drivers": [
+    {
+      "feature": "total_reimb",
+      "value": 2540130.0,
+      "shap": 2.9954
+    },
+    {
+      "feature": "claim_count",
+      "value": 1743.0,
+      "shap": 1.3825
+    },
+    {
+      "feature": "max_claim_duration",
+      "value": 35.0,
+      "shap": 1.1552
+    },
+    {
+      "feature": "claims_per_bene",
+      "value": 2.515151515147886,
+      "shap": 0.3911
+    },
+    {
+      "feature": "std_age",
+      "value": 13.058764910904364,
+      "shap": 0.1915
+    }
+  ]
+}

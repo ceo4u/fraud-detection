@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(content=~{::section})}">
+<body>
+<section>
+    <div class="st-section-title">
+        <h2>Model Performance &amp; Validation Benchmarks</h2>
+    </div>
+
+    <!-- 5 KPI Cards in light theme -->
+    <div class="st-metrics-row" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="st-metric-card">
+            <div class="st-metric-label">PR-AUC</div>
+            <div class="st-metric-value" style="color:#09ab3b;" th:text="${metrics != null ? metrics.prAucFormatted : '0.78'}">0.78</div>
+            <div class="st-metric-delta">Primary benchmark</div>
+        </div>
+        <div class="st-metric-card">
+            <div class="st-metric-label">ROC-AUC</div>
+            <div class="st-metric-value" th:text="${metrics != null ? metrics.rocAucFormatted : '0.97'}">0.97</div>
+            <div class="st-metric-delta">Discrimination curve</div>
+        </div>
+        <div class="st-metric-card">
+            <div class="st-metric-label">Recall (Catch Rate)</div>
+            <div class="st-metric-value" style="color:#09ab3b;" th:text="${metrics != null ? metrics.recallFormatted : '89.1%'}">89.1%</div>
+            <div class="st-metric-delta">90 of 101 caught</div>
+        </div>
+        <div class="st-metric-card">
+            <div class="st-metric-label">Precision</div>
+            <div class="st-metric-value" th:text="${metrics != null ? metrics.precisionFormatted : '49.7%'}">49.7%</div>
+            <div class="st-metric-delta">1 in 2 alerts true fraud</div>
+        </div>
+        <div class="st-metric-card">
+            <div class="st-metric-label">F1 Score</div>
+            <div class="st-metric-value" th:text="${metrics != null ? metrics.f1Formatted : '0.64'}">0.64</div>
+            <div class="st-metric-delta">Harmonic balance</div>
+        </div>
+    </div>
+
+    <!-- Visualizations Grid -->
+    <div class="st-grid-2" style="margin-top: 24px;">
+        <!-- Left: Confusion Matrix Heatmap -->
+        <div class="st-card">
+            <div class="st-card-title">
+                <h3>Test Confusion Matrix</h3>
+                <p>Evaluated at production threshold 0.28 (Missed Frauds outlined in red)</p>
+            </div>
+            <div id="confusion-matrix" style="min-height: 350px;"></div>
+        </div>
+
+        <!-- Right: Global SHAP Summary Plot -->
+        <div class="st-card">
+            <div class="st-card-title">
+                <h3>Global Feature Importance (SHAP)</h3>
+                <p>Top behavioral signals driving model predictions across population</p>
+            </div>
+            <div style="text-align: center; padding-top: 8px;">
+                <img th:src="@{/api/plots/shap_summary}" alt="SHAP Summary Plot" style="max-width: 100%; border-radius: 4px; border: 1px solid #e6eaf1;">
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/metrics.js}"></script>
+</section>
+</body>
+</html>

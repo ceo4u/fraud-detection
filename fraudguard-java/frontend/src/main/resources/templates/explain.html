@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(content=~{::section})}">
+<body>
+<section>
+    <div class="st-section-title">
+        <h2>Provider-Level Behavioral Explainability</h2>
+    </div>
+
+    <!-- Curated Demo Banner matching Streamlit -->
+    <div class="st-demo-banner">
+        <button id="load-demo-btn" type="button" class="st-btn-demo">
+            ⭐ Load Demo Provider
+        </button>
+        <span class="st-demo-caption">
+            Curated High-Risk Case: <strong th:text="${demoProvider != null ? demoProvider.provider : 'PRV52340'}">PRV52340</strong> 
+            (Fraud Prob: <code th:text="${demoProvider != null ? #numbers.formatDecimal(demoProvider.prob, 1, 4) : '0.9987'}">0.9987</code>, True Label: <strong>Fraud</strong>)
+        </span>
+    </div>
+
+    <!-- Provider Selector & Probability Readout -->
+    <div class="st-controls-card">
+        <div class="st-form-group" style="margin-bottom: 0; flex: 1; max-width: 400px;">
+            <label class="st-label" for="provider-select">Select Provider to Inspect:</label>
+            <select id="provider-select" class="st-select">
+                <option th:each="p : ${topProviders}"
+                        th:value="${p.provider}"
+                        th:text="${p.provider} + ' (' + ${p.probaDecimal} + ')'"
+                        th:selected="${p.provider == selectedProvider}">
+                    PRV52340 (0.9987)
+                </option>
+            </select>
+        </div>
+        <div class="st-stat-badge">
+            <span>Fraud Probability: <strong id="provider-prob-val">0.9987</strong></span>
+            <span class="st-sep">|</span>
+            <span>Risk Tier: <strong id="provider-tier-val" class="text-danger">High</strong></span>
+        </div>
+    </div>
+
+    <!-- Waterfall & Top Drivers -->
+    <div class="st-grid-2" style="margin-top: 24px;">
+        <!-- Waterfall Chart -->
+        <div class="st-card">
+            <div class="st-card-title">
+                <h3>SHAP Feature Impact Waterfall</h3>
+                <p>Positive (red) shifts elevate fraud risk; negative (green) mitigate risk</p>
+            </div>
+            <div id="waterfall" style="min-height: 400px;"></div>
+        </div>
+
+        <!-- Top Factor Lists & Reasoning -->
+        <div>
+            <div class="st-card" style="margin-bottom: 20px;">
+                <div class="st-card-title">
+                    <h3>🔺 Top Factors Increasing Fraud Risk</h3>
+                </div>
+                <div id="pos-drivers-list" class="st-factors-list">
+                    <p class="text-muted">Calculating SHAP attributions...</p>
+                </div>
+            </div>
+
+            <div class="st-card">
+                <div class="st-card-title">
+                    <h3>🔻 Top Factors Decreasing Fraud Risk</h3>
+                </div>
+                <div id="neg-drivers-list" class="st-factors-list">
+                    <p class="text-muted">Calculating SHAP attributions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/explain.js}"></script>
+</section>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(content=~{::section})}">
+<body>
+<section>
+    <div class="fd-hero">
+        <div class="fd-eyebrow" style="color:var(--danger)">Connection Notice</div>
+        <h2>Backend Service Offline</h2>
+        <p>The Java Spring Boot frontend cannot reach the Python FastAPI service.</p>
+    </div>
+
+    <div class="fd-card" style="border-left: 4px solid var(--danger);">
+        <h3 style="color:var(--danger); margin-bottom:12px;">Python FastAPI is not responding</h3>
+        <p th:text="${errorMessage}" style="color:var(--text-secondary); margin-bottom:16px;">Connection refused</p>
+        <div style="background:var(--bg-base); padding:16px; border-radius:var(--radius); border:1px solid var(--border-subtle)">
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:8px;">To start the backend service:</p>
+            <code style="color:var(--primary); font-size:0.9rem;">
+                cd fraudguard-java/backend<br>
+                uvicorn api:app --reload --port 8000
+            </code>
+        </div>
+        <div style="margin-top:20px;">
+            <a href="/" class="fd-btn fd-btn-primary">Retry Connection</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Provider Fraud Detector</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <div class="st-app-container">
+        <!-- Streamlit Style Sidebar -->
+        <aside class="st-sidebar">
+            <div class="st-sidebar-content">
+                <div class="st-sidebar-header">
+                    <span class="st-icon">⚙️</span>
+                    <h2>Configuration</h2>
+                </div>
+
+                <!-- Data Source Radio -->
+                <div class="st-form-group">
+                    <label class="st-label">Data Source</label>
+                    <div class="st-radio-group">
+                        <label class="st-radio-option">
+                            <input type="radio" name="dataSource" value="test" checked id="radio-test">
+                            <span class="st-radio-circle"></span>
+                            <span class="st-radio-text">Test set (1,082 providers)</span>
+                        </label>
+                        <label class="st-radio-option">
+                            <input type="radio" name="dataSource" value="all" id="radio-all">
+                            <span class="st-radio-circle"></span>
+                            <span class="st-radio-text">All providers (5,410)</span>
+                        </label>
+                        <label class="st-radio-option">
+                            <input type="radio" name="dataSource" value="upload" id="radio-upload">
+                            <span class="st-radio-circle"></span>
+                            <span class="st-radio-text">Upload CSV</span>
+                        </label>
+                    </div>
+
+                    <!-- Upload File Box (Shown when Upload CSV is selected) -->
+                    <div id="sidebar-upload-box" style="display: none; margin-top: 14px; background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: 6px; padding: 12px; text-align: center;">
+                        <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 6px;">Select provider CSV file</p>
+                        <input type="file" id="sidebar-file-input" accept=".csv" style="display: none;">
+                        <button type="button" onclick="document.getElementById('sidebar-file-input').click()" class="st-btn-secondary" style="font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Browse CSV</button>
+                        <div id="sidebar-file-name" style="font-size: 0.75rem; color: #09ab3b; margin-top: 6px; font-weight: 600; word-break: break-all;"></div>
+                    </div>
+                </div>
+
+                <!-- Risk Threshold Slider -->
+                <div class="st-form-group" style="margin-top: 24px;">
+                    <div class="st-slider-header">
+                        <label class="st-label" for="threshold-slider">Risk threshold</label>
+                        <span class="st-tooltip" title="Providers with fraud probability >= threshold will be flagged as High Risk.">?</span>
+                    </div>
+                    <div class="st-slider-container">
+                        <input type="range" id="threshold-slider" min="0.05" max="0.95" step="0.01" value="0.28" class="st-slider">
+                        <div class="st-slider-value-bubble" id="slider-bubble">0.28</div>
+                    </div>
+                    <div class="st-slider-range-labels">
+                        <span>0.05</span>
+                        <span>0.95</span>
+                    </div>
+                    <div class="st-threshold-note">
+                        <strong>Production Threshold (Balanced):</strong> <code>0.28</code>
+                    </div>
+                </div>
+
+                <!-- System Badge Info -->
+                <div class="st-sidebar-footer">
+                    <div class="st-status-row">
+                        <span class="st-status-dot" th:classappend="${backendAvailable != null and !backendAvailable} ? 'offline' : ''"></span>
+                        <span th:text="${backendAvailable != null and !backendAvailable} ? 'Backend Offline' : 'Model Online (Spring Boot + FastAPI)'">Model Online</span>
+                    </div>
+                    <div class="st-info-sub">
+                        <span>XGBoost • PR-AUC 0.784</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="st-main">
+            <!-- App Header (Matching Screenshot) -->
+            <header class="st-header">
+                <div class="st-title-row">
+                    <div class="st-title-icon">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="#3B82F6">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="st-title">Healthcare Provider Fraud Detector</h1>
+                        <p class="st-subtitle">CMS Medicare Claims Fraud Detection &amp; Behavioral Explainability Engine</p>
+                    </div>
+                </div>
+
+                <!-- Top Tabs Bar -->
+                <nav class="st-tabs">
+                    <a th:href="@{/}" class="st-tab" th:classappend="${activeTab == 'dashboard'} ? 'active' : ''">
+                        <span class="st-tab-icon">🔍</span> Predictions
+                    </a>
+                    <a th:href="@{/explain}" class="st-tab" th:classappend="${activeTab == 'explain'} ? 'active' : ''">
+                        <span class="st-tab-icon">💬</span> Explain provider
+                    </a>
+                    <a th:href="@{/metrics}" class="st-tab" th:classappend="${activeTab == 'metrics'} ? 'active' : ''">
+                        <span class="st-tab-icon">📊</span> Model performance
+                    </a>
+                    <a th:href="@{/about}" class="st-tab" th:classappend="${activeTab == 'about'} ? 'active' : ''">
+                        <span class="st-tab-icon">ℹ️</span> About &amp; Architecture
+                    </a>
+                </nav>
+            </header>
+
+            <!-- Injected View Fragment -->
+            <div class="st-content-body">
+                <div th:replace="${content}">
+                    <!-- Page content -->
+                </div>
+            </div>
+
+            <!-- Subtle Footer -->
+            <footer class="st-footer">
+                <p>⚠️ <strong>Disclaimer:</strong> Fraud scores are statistical risk estimates based on CMS Medicare claim anomalies. For compliance review workflows only.</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Global Slider & Source Controller -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('threshold-slider');
+            const bubble = document.getElementById('slider-bubble');
+
+            function updateSliderBubble(val) {
+                if (!slider || !bubble) return;
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                const percent = (val - min) / (max - min);
+                bubble.textContent = parseFloat(val).toFixed(2);
+                const offset = percent * 100;
+                bubble.style.left = `calc(${offset}% + (${8 - offset * 0.16}px))`;
+            }
+
+            if (slider) {
+                updateSliderBubble(slider.value);
+                slider.addEventListener('input', (e) => {
+                    const val = parseFloat(e.target.value);
+                    updateSliderBubble(val);
+                    window.dispatchEvent(new CustomEvent('thresholdChanged', { detail: { threshold: val } }));
+                });
+            }
+
+            const radioTest = document.getElementById('radio-test');
+            const radioAll = document.getElementById('radio-all');
+            const radioUpload = document.getElementById('radio-upload');
+            const uploadBox = document.getElementById('sidebar-upload-box');
+            const fileInput = document.getElementById('sidebar-file-input');
+            const fileNameEl = document.getElementById('sidebar-file-name');
+
+            function onSourceChange(src) {
+                if (uploadBox) {
+                    uploadBox.style.display = (src === 'upload') ? 'block' : 'none';
+                }
+                window.dispatchEvent(new CustomEvent('dataSourceChanged', { detail: { source: src } }));
+            }
+
+            if (radioTest) radioTest.addEventListener('change', () => onSourceChange('test'));
+            if (radioAll) radioAll.addEventListener('change', () => onSourceChange('all'));
+            if (radioUpload) radioUpload.addEventListener('change', () => onSourceChange('upload'));
+
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (fileNameEl) fileNameEl.textContent = `📄 ${file.name}`;
+
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        const text = evt.target.result;
+                        window.dispatchEvent(new CustomEvent('csvFileUploaded', {
+                            detail: { fileName: file.name, content: text }
+                        }));
+                    };
+                    reader.readAsText(file);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
