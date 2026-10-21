@@ -8,12 +8,17 @@ Zero dummy, fake, or hardcoded provider data.
 
 from pathlib import Path
 import json
+import sys
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
 import plotly.graph_objects as go
 from sklearn.metrics import precision_recall_curve, average_precision_score
+
+ROOT_DIR = Path(__file__).resolve().parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from src.batch_inference import score_raw_claims
 
@@ -30,7 +35,7 @@ st.set_page_config(
 
 
 def load_css():
-    css_path = Path("assets/styles.css")
+    css_path = ROOT_DIR / "assets" / "styles.css"
     if css_path.exists():
         with open(css_path, "r", encoding="utf-8") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -44,7 +49,7 @@ load_css()
 # -----------------------------------------------------------------------------
 @st.cache_resource
 def load_model_artifact():
-    path = Path("models/model.pkl")
+    path = ROOT_DIR / "models" / "model.pkl"
     if not path.exists():
         return None
     return joblib.load(path)
@@ -52,7 +57,7 @@ def load_model_artifact():
 
 @st.cache_data
 def load_features_dataset():
-    path = Path("models/features.parquet")
+    path = ROOT_DIR / "models" / "features.parquet"
     if not path.exists():
         return None
     return pd.read_parquet(path)
@@ -60,7 +65,7 @@ def load_features_dataset():
 
 @st.cache_data
 def load_test_predictions():
-    path = Path("models/test_preds.parquet")
+    path = ROOT_DIR / "models" / "test_preds.parquet"
     if not path.exists():
         return None
     return pd.read_parquet(path)
@@ -68,8 +73,8 @@ def load_test_predictions():
 
 @st.cache_data
 def load_shap_artifacts():
-    sample_path = Path("models/shap_X_sample.parquet")
-    vals_path = Path("models/shap_values.npy")
+    sample_path = ROOT_DIR / "models" / "shap_X_sample.parquet"
+    vals_path = ROOT_DIR / "models" / "shap_values.npy"
     if not sample_path.exists() or not vals_path.exists():
         return None, None
     sample_df = pd.read_parquet(sample_path)
@@ -78,7 +83,7 @@ def load_shap_artifacts():
 
 
 def load_demo_provider_json():
-    demo_file = Path("models/demo_provider.json")
+    demo_file = ROOT_DIR / "models" / "demo_provider.json"
     if demo_file.exists():
         with open(demo_file, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -794,9 +799,9 @@ with st.expander("📤 Batch Upload Raw Claims (Production Inference)", expanded
     )
 
     b_col1, b_col2, b_col3 = st.columns(3)
-    p_ip = Path("data/upload_template/sample_inpatient.csv")
-    p_op = Path("data/upload_template/sample_outpatient.csv")
-    p_bene = Path("data/upload_template/sample_beneficiary.csv")
+    p_ip = ROOT_DIR / "data" / "upload_template" / "sample_inpatient.csv"
+    p_op = ROOT_DIR / "data" / "upload_template" / "sample_outpatient.csv"
+    p_bene = ROOT_DIR / "data" / "upload_template" / "sample_beneficiary.csv"
 
     with b_col1:
         if p_ip.exists():

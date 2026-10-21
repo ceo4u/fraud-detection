@@ -3,14 +3,23 @@ Batch inference module for Health Insurance Fraud Detector.
 Enables scoring of raw, multi-table claims CSVs without manual feature computation.
 """
 
+import sys
 from pathlib import Path
 from typing import Optional, Union, Tuple, List
 import pandas as pd
 import numpy as np
 import joblib
 
-from src.data_prep import prepare_claims, merge_beneficiary
-from src.features import compute_provider_features
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+try:
+    from src.data_prep import prepare_claims, merge_beneficiary
+    from src.features import compute_provider_features
+except ImportError:
+    from data_prep import prepare_claims, merge_beneficiary
+    from features import compute_provider_features
 
 REQUIRED_INPATIENT_COLS = [
     "BeneID",
