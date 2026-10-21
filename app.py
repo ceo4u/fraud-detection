@@ -20,7 +20,13 @@ ROOT_DIR = Path(__file__).resolve().parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from src.batch_inference import score_raw_claims
+try:
+    from src.batch_inference import score_raw_claims
+except Exception:
+    try:
+        from batch_inference import score_raw_claims
+    except Exception:
+        score_raw_claims = None
 
 
 # -----------------------------------------------------------------------------
@@ -51,24 +57,39 @@ load_css()
 def load_model_artifact():
     path = ROOT_DIR / "models" / "model.pkl"
     if not path.exists():
+        st.error(f"model.pkl not found at {path}")
         return None
-    return joblib.load(path)
+    try:
+        return joblib.load(path)
+    except Exception as e:
+        st.error(f"Failed to deserialize model.pkl: {e}")
+        return None
 
 
 @st.cache_data
 def load_features_dataset():
     path = ROOT_DIR / "models" / "features.parquet"
     if not path.exists():
+        st.error(f"features.parquet not found at {path}")
         return None
-    return pd.read_parquet(path)
+    try:
+        return pd.read_parquet(path)
+    except Exception as e:
+        st.error(f"Failed to read features.parquet: {e}")
+        return None
 
 
 @st.cache_data
 def load_test_predictions():
     path = ROOT_DIR / "models" / "test_preds.parquet"
     if not path.exists():
+        st.error(f"test_preds.parquet not found at {path}")
         return None
-    return pd.read_parquet(path)
+    try:
+        return pd.read_parquet(path)
+    except Exception as e:
+        st.error(f"Failed to read test_preds.parquet: {e}")
+        return None
 
 
 @st.cache_data
@@ -77,9 +98,13 @@ def load_shap_artifacts():
     vals_path = ROOT_DIR / "models" / "shap_values.npy"
     if not sample_path.exists() or not vals_path.exists():
         return None, None
-    sample_df = pd.read_parquet(sample_path)
-    vals = np.load(vals_path)
-    return sample_df, vals
+    try:
+        sample_df = pd.read_parquet(sample_path)
+        vals = np.load(vals_path)
+        return sample_df, vals
+    except Exception as e:
+        st.warning(f"Note: Precomputed SHAP values could not be loaded: {e}")
+        return None, None
 
 
 def load_demo_provider_json():
